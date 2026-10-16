@@ -1,0 +1,1643 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#081C33">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>TecnoAyuda · Reporta. Soluciona. Avanza.</title>
+<style>
+  /* ===================== TOKENS DE DISEÑO ===================== */
+  :root{
+    --azul-oscuro-1:#081C33;
+    --azul-oscuro-2:#0E2C4F;
+    --azul-oscuro-3:#123A66;
+    --azul-brillante:#2E86FF;
+    --azul-brillante-suave:#5CA1FF;
+    --blanco:#FFFFFF;
+    --gris-100:#F4F6F9;
+    --gris-200:#E7EBF1;
+    --gris-300:#D3DAE4;
+    --gris-500:#8C97A6;
+    --gris-700:#4B5768;
+
+    --estado-abierto:#E4572E;
+    --estado-revision:#E39A17;
+    --estado-proceso:#2E86FF;
+    --estado-resuelto:#1F9D6B;
+
+    --prioridad-alta:#E4572E;
+    --prioridad-media:#E39A17;
+    --prioridad-baja:#1F9D6B;
+
+    --radius-s:8px;
+    --radius-m:14px;
+    --radius-l:22px;
+    --sombra: 0 10px 30px -12px rgba(8,28,51,.35);
+    --borde: 1px solid var(--gris-200);
+  }
+
+  /* Zonas seguras (barra de estado / de navegación). Capacitor en Android las entrega como --safe-area-inset-*; en navegadores, env(). */
+  :root{
+    --sai-top:max(env(safe-area-inset-top, 0px), var(--safe-area-inset-top, 0px));
+    --sai-bottom:max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px));
+    --sai-left:max(env(safe-area-inset-left, 0px), var(--safe-area-inset-left, 0px));
+    --sai-right:max(env(safe-area-inset-right, 0px), var(--safe-area-inset-right, 0px));
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family:"Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    color:var(--azul-oscuro-1);
+    background:var(--gris-100);
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{margin:0 0 .4em 0; font-weight:800; letter-spacing:-.01em; color:var(--azul-oscuro-1);}
+  p{margin:0 0 .8em 0; line-height:1.55; color:var(--gris-700);}
+  button{font-family:inherit; cursor:pointer;}
+  a{color:inherit;}
+  ::selection{background:var(--azul-brillante-suave); color:var(--blanco);}
+  :focus-visible{outline:3px solid var(--azul-brillante-suave); outline-offset:2px;}
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important; transition:none !important;}
+  }
+
+  .oculto{display:none !important;}
+  .contenedor{max-width:1180px; margin:0 auto; padding:0 24px;}
+
+  /* ===================== NAVBAR ===================== */
+  header.barra{
+    position:sticky; top:0; z-index:50; padding-top:var(--sai-top); padding-left:var(--sai-left); padding-right:var(--sai-right);
+    background:linear-gradient(180deg, var(--azul-oscuro-1), var(--azul-oscuro-2));
+    box-shadow:0 6px 18px -8px rgba(0,0,0,.35);
+  }
+  .barra-interna{
+    max-width:1180px; margin:0 auto; padding:14px 24px;
+    display:flex; align-items:center; justify-content:space-between; gap:18px;
+  }
+  .marca{display:flex; align-items:center; gap:12px; color:var(--blanco); text-decoration:none;}
+  .marca-logo{
+    width:42px; height:42px; border-radius:11px;
+    background:radial-gradient(circle at 30% 25%, var(--azul-brillante-suave), var(--azul-brillante) 55%, var(--azul-oscuro-3) 100%);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    box-shadow:0 4px 12px -3px rgba(46,134,255,.6);
+  }
+  .marca-texto{display:flex; flex-direction:column; line-height:1.1;}
+  .marca-texto strong{font-size:1.18rem; font-weight:800; color:var(--blanco);}
+  .marca-texto span{font-size:.72rem; color:var(--azul-brillante-suave); font-weight:600;}
+
+  nav.principal{display:flex; align-items:center; gap:4px;}
+  .nav-boton{
+    background:transparent; border:none; color:#C9D8EC;
+    padding:9px 14px; border-radius:var(--radius-s); font-size:.92rem; font-weight:600;
+    transition:background .15s, color .15s;
+  }
+  .nav-boton:hover{background:rgba(255,255,255,.08); color:var(--blanco);}
+  .nav-boton.activo{background:var(--azul-brillante); color:var(--blanco);}
+
+  .boton-nuevo-reporte{
+    background:var(--blanco); color:var(--azul-oscuro-1);
+    padding:9px 16px; border-radius:var(--radius-s); font-weight:700; font-size:.9rem; border:none;
+  }
+  .boton-nuevo-reporte:hover{background:var(--azul-brillante-suave); color:var(--blanco);}
+
+  .menu-hamburguesa{display:none; background:transparent; border:1px solid rgba(255,255,255,.3); border-radius:8px; padding:8px 10px; color:var(--blanco);}
+
+  @media (max-width:900px){
+    nav.principal{
+      position:absolute; top:100%; left:0; right:0;
+      background:var(--azul-oscuro-2); flex-direction:column; align-items:stretch;
+      padding:10px 16px 18px; gap:4px; border-top:1px solid rgba(255,255,255,.08);
+      display:none;
+    }
+    nav.principal.abierto{display:flex;}
+    .nav-boton{text-align:left; padding:11px 12px;}
+    .menu-hamburguesa{display:block;}
+    .boton-nuevo-reporte{display:none;}
+  }
+
+  /* ===================== SECCIONES / HERO ===================== */
+  main{padding:38px 0 70px;}
+  section.vista{display:none;}
+  section.vista.activa{display:block; animation:aparecer .35s ease;}
+  @keyframes aparecer{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;}}
+
+  .hero{
+    display:grid; grid-template-columns:1.15fr .85fr; gap:36px; align-items:center;
+    background:linear-gradient(135deg, var(--azul-oscuro-1), var(--azul-oscuro-3) 70%);
+    border-radius:var(--radius-l); padding:46px 44px; color:var(--blanco); margin-bottom:34px;
+    box-shadow:var(--sombra);
+  }
+  .hero h1{color:var(--blanco); font-size:2.5rem; margin-bottom:.15em;}
+  .eslogan{
+    display:inline-block; color:var(--azul-brillante-suave); font-weight:700; font-size:1.05rem;
+    margin-bottom:14px; letter-spacing:.02em;
+  }
+  .hero p{color:#C9D8EC; max-width:46ch;}
+  .hero-botones{display:flex; gap:12px; flex-wrap:wrap; margin-top:18px;}
+  .boton{
+    padding:12px 20px; border-radius:var(--radius-s); border:none; font-weight:700; font-size:.94rem;
+    transition:transform .12s, box-shadow .12s;
+  }
+  .boton:active{transform:scale(.97);}
+  .boton-primario{background:var(--azul-brillante); color:var(--blanco);}
+  .boton-primario:hover{box-shadow:0 8px 18px -6px rgba(46,134,255,.65);}
+  .boton-secundario{background:rgba(255,255,255,.08); color:var(--blanco); border:1px solid rgba(255,255,255,.3);}
+  .boton-secundario:hover{background:rgba(255,255,255,.16);}
+  .boton-terciario{background:var(--gris-200); color:var(--azul-oscuro-1);}
+  .boton-terciario:hover{background:var(--gris-300);}
+
+  .hero-panel{
+    background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.16);
+    border-radius:var(--radius-m); padding:22px; backdrop-filter:blur(2px);
+  }
+  .hero-panel h3{color:var(--blanco); font-size:.95rem; text-transform:none; margin-bottom:14px;}
+  .icono-circuito{width:100%; height:auto; display:block;}
+
+  /* Tarjetas de resumen */
+  .resumen{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-bottom:34px;}
+  .tarjeta-resumen{
+    background:var(--blanco); border-radius:var(--radius-m); padding:20px 22px; border:var(--borde);
+    display:flex; align-items:center; gap:16px;
+  }
+  .tarjeta-resumen .num{font-size:2.1rem; font-weight:800; line-height:1;}
+  .tarjeta-resumen .etq{font-size:.85rem; color:var(--gris-700); font-weight:600; margin-top:4px;}
+  .punto{width:12px; height:12px; border-radius:50%; flex-shrink:0;}
+  .punto.abierto{background:var(--estado-abierto);}
+  .punto.proceso{background:var(--estado-proceso);}
+  .punto.resuelto{background:var(--estado-resuelto);}
+
+  .accesos-rapidos{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-bottom:10px;}
+  .acceso{
+    background:var(--blanco); border-radius:var(--radius-m); padding:22px; border:var(--borde);
+    text-align:left; display:flex; flex-direction:column; gap:8px;
+  }
+  .acceso:hover{border-color:var(--azul-brillante);}
+  .acceso .acc-icono{width:38px; height:38px; border-radius:10px; background:var(--gris-100); display:flex; align-items:center; justify-content:center;}
+  .acceso h4{font-size:1.02rem;}
+  .acceso p{margin:0; font-size:.87rem;}
+
+  @media (max-width:900px){
+    .hero{grid-template-columns:1fr; padding:32px 26px;}
+    .hero h1{font-size:2rem;}
+    .resumen, .accesos-rapidos{grid-template-columns:1fr;}
+  }
+
+  /* ===================== ENCABEZADO DE SECCIÓN ===================== */
+  .encabezado-seccion{display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:22px;}
+  .encabezado-seccion h2{font-size:1.55rem;}
+  .encabezado-seccion .sub{color:var(--gris-700); font-size:.92rem; max-width:60ch;}
+
+  /* ===================== FORMULARIO ===================== */
+  .tarjeta-form{
+    background:var(--blanco); border-radius:var(--radius-l); padding:32px; border:var(--borde);
+    max-width:720px; box-shadow:var(--sombra);
+  }
+  .campo{margin-bottom:18px; display:flex; flex-direction:column; gap:6px;}
+  .campo label{font-size:.86rem; font-weight:700; color:var(--azul-oscuro-2);}
+  .campo .ayuda{font-size:.78rem; color:var(--gris-500); font-weight:400;}
+  input, select, textarea{
+    font-family:inherit; font-size:.95rem; padding:11px 13px; border-radius:var(--radius-s);
+    border:1.5px solid var(--gris-300); background:var(--gris-100); color:var(--azul-oscuro-1);
+  }
+  input:focus, select:focus, textarea:focus{border-color:var(--azul-brillante); background:var(--blanco);}
+  textarea{resize:vertical; min-height:90px;}
+  .fila-2{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  @media (max-width:600px){.fila-2{grid-template-columns:1fr;}}
+
+  .prioridad-opciones{display:flex; gap:10px;}
+  .chip-prioridad{
+    flex:1; text-align:center; padding:10px; border-radius:var(--radius-s); border:1.5px solid var(--gris-300);
+    background:var(--gris-100); font-weight:700; font-size:.85rem; color:var(--gris-700);
+  }
+  .chip-prioridad input{display:none;}
+  .chip-prioridad.marcada{border-color:currentColor;}
+  .chip-prioridad.marcada[data-p="Alta"]{color:var(--prioridad-alta); background:#FDEDE8;}
+  .chip-prioridad.marcada[data-p="Media"]{color:var(--prioridad-media); background:#FCF3DF;}
+  .chip-prioridad.marcada[data-p="Baja"]{color:var(--prioridad-baja); background:#E7F7F0;}
+
+  .mensaje-confirmacion{
+    display:none; align-items:center; gap:10px; background:#E7F7F0; color:#136C48;
+    border:1px solid #BEE7D4; padding:13px 16px; border-radius:var(--radius-s); margin-bottom:18px; font-weight:600; font-size:.9rem;
+  }
+  .mensaje-confirmacion.mostrar{display:flex;}
+
+  /* ===================== FILTROS ===================== */
+  .barra-filtros{display:flex; gap:12px; flex-wrap:wrap; margin-bottom:22px;}
+  .barra-filtros select{min-width:180px;}
+
+  /* ===================== TARJETAS DE REPORTE ===================== */
+  .lista-reportes{display:flex; flex-direction:column; gap:14px;}
+  .tarjeta-reporte{
+    background:var(--blanco); border:var(--borde); border-left:5px solid var(--gris-300);
+    border-radius:var(--radius-m); padding:18px 20px; display:grid; grid-template-columns:1fr auto; gap:14px; align-items:center;
+  }
+  .tarjeta-reporte[data-estado="Abierto"]{border-left-color:var(--estado-abierto);}
+  .tarjeta-reporte[data-estado="En revisión"]{border-left-color:var(--estado-revision);}
+  .tarjeta-reporte[data-estado="En proceso"]{border-left-color:var(--estado-proceso);}
+  .tarjeta-reporte[data-estado="Resuelto"]{border-left-color:var(--estado-resuelto);}
+
+  .rep-cabecera{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:6px;}
+  .rep-id{font-weight:800; color:var(--azul-oscuro-2); font-size:.95rem;}
+  .badge{
+    font-size:.72rem; font-weight:700; padding:3px 10px; border-radius:999px; color:var(--blanco);
+  }
+  .badge.Abierto{background:var(--estado-abierto);}
+  .badge.En_revisión{background:var(--estado-revision);}
+  .badge.En_proceso{background:var(--estado-proceso);}
+  .badge.Resuelto{background:var(--estado-resuelto);}
+  .badge-cat{background:var(--gris-200); color:var(--azul-oscuro-2);}
+  .badge-demo{background:var(--gris-700);}
+  .rep-desc{font-size:.94rem; color:var(--azul-oscuro-1); margin:2px 0 6px;}
+  .rep-meta{display:flex; gap:14px; flex-wrap:wrap; font-size:.8rem; color:var(--gris-500);}
+  .rep-meta span{display:flex; align-items:center; gap:5px;}
+
+  .rep-acciones{display:flex; flex-direction:column; gap:8px; align-items:flex-end;}
+  .rep-acciones select{font-size:.8rem; padding:7px 9px;}
+  .vacio{
+    text-align:center; padding:50px 20px; color:var(--gris-500); background:var(--blanco);
+    border-radius:var(--radius-m); border:1.5px dashed var(--gris-300);
+  }
+
+  @media (max-width:640px){
+    .tarjeta-reporte{grid-template-columns:1fr;}
+    .rep-acciones{align-items:stretch;}
+  }
+
+  /* ===================== SEGUIMIENTO ===================== */
+  .panel-seguimiento{
+    background:var(--blanco); border-radius:var(--radius-l); padding:30px; border:var(--borde); box-shadow:var(--sombra);
+  }
+  .selector-seguimiento{display:flex; gap:12px; flex-wrap:wrap; margin-bottom:28px;}
+  .selector-seguimiento select{flex:1; min-width:240px;}
+
+  .etapas{display:flex; align-items:flex-start; gap:0; margin:30px 0 10px; overflow-x:auto; padding-bottom:6px;}
+  .etapa{display:flex; flex-direction:column; align-items:center; gap:10px; flex:1; min-width:120px; position:relative;}
+  .etapa .circulo{
+    width:34px; height:34px; border-radius:50%; background:var(--gris-200); color:var(--gris-500);
+    display:flex; align-items:center; justify-content:center; font-weight:800; font-size:.85rem; z-index:1;
+    border:3px solid var(--blanco); box-shadow:0 0 0 2px var(--gris-300);
+  }
+  .etapa .linea{
+    position:absolute; top:17px; left:-50%; width:100%; height:3px; background:var(--gris-300); z-index:0;
+  }
+  .etapa:first-child .linea{display:none;}
+  .etapa .titulo-etapa{font-size:.82rem; font-weight:700; color:var(--gris-500); text-align:center;}
+  .etapa.completada .circulo{background:var(--azul-brillante); color:var(--blanco); box-shadow:0 0 0 2px var(--azul-brillante);}
+  .etapa.completada .linea{background:var(--azul-brillante);}
+  .etapa.completada .titulo-etapa{color:var(--azul-oscuro-1);}
+  .etapa.actual .circulo{background:var(--blanco); color:var(--azul-brillante); box-shadow:0 0 0 3px var(--azul-brillante);}
+  .etapa.actual .titulo-etapa{color:var(--azul-brillante);}
+
+  .detalle-seguimiento{margin-top:24px; padding-top:22px; border-top:var(--borde);}
+  .detalle-seguimiento h3{font-size:1.05rem;}
+  .grid-detalle{display:grid; grid-template-columns:repeat(2,1fr); gap:10px 24px; margin-top:12px;}
+  .grid-detalle div span{display:block; font-size:.76rem; color:var(--gris-500); font-weight:700; text-transform:uppercase; letter-spacing:.03em;}
+  .grid-detalle div p{margin:2px 0 0; font-weight:600; color:var(--azul-oscuro-1);}
+  @media (max-width:600px){.grid-detalle{grid-template-columns:1fr;}}
+
+  /* ===================== USUARIOS / SOLUCIONES ===================== */
+  .rejilla-3{display:grid; grid-template-columns:repeat(3,1fr); gap:18px;}
+  @media (max-width:900px){.rejilla-3{grid-template-columns:1fr;}}
+  .tarjeta-usuario, .tarjeta-solucion{
+    background:var(--blanco); border-radius:var(--radius-m); padding:24px; border:var(--borde);
+  }
+  .tarjeta-usuario .u-icono{
+    width:46px; height:46px; border-radius:12px; background:var(--gris-100); display:flex; align-items:center; justify-content:center; margin-bottom:12px;
+  }
+  .tarjeta-solucion .s-etiqueta{
+    font-size:.72rem; font-weight:700; color:var(--estado-resuelto); background:#E7F7F0;
+    display:inline-block; padding:3px 10px; border-radius:999px; margin-bottom:10px;
+  }
+
+  .aviso-demo{
+    display:inline-flex; align-items:center; gap:8px; background:var(--gris-200); color:var(--gris-700);
+    font-size:.8rem; font-weight:600; padding:8px 14px; border-radius:var(--radius-s); margin-bottom:22px;
+  }
+
+  footer{
+    background:var(--azul-oscuro-1); color:#9FB4CE; text-align:center; padding:26px 20px; padding-bottom:calc(24px + var(--sai-bottom)); font-size:.82rem; margin-top:60px;
+  }
+  footer strong{color:var(--blanco);}
+
+  .hero{grid-template-columns:1fr; padding:30px 32px;}
+  .hero h1{font-size:2rem;}
+  .pantalla-auth{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:calc(24px + var(--sai-top)) calc(24px + var(--sai-right)) calc(24px + var(--sai-bottom)) calc(24px + var(--sai-left)); background:radial-gradient(circle at 20% 20%, var(--azul-oscuro-3), var(--azul-oscuro-1) 65%);}
+  .tarjeta-auth{background:var(--blanco); border-radius:var(--radius-l); padding:34px 30px; max-width:380px; width:100%; box-shadow:0 25px 60px -20px rgba(0,0,0,.5); text-align:center;}
+  .tarjeta-auth .marca-logo{margin:0 auto 8px; width:52px; height:52px;}
+  .tarjeta-auth h1{font-size:1.6rem; margin:0;}
+  .auth-eslogan{display:block; color:var(--azul-brillante); font-weight:700; font-size:.92rem; margin-bottom:22px;}
+  .tarjeta-auth .campo{text-align:left;}
+  .tarjeta-auth .boton{width:100%;}
+  .auth-tabs{display:flex; gap:4px; background:var(--gris-100); padding:4px; border-radius:var(--radius-m); margin-bottom:18px;}
+  .auth-tab{flex:1; border:none; background:transparent; padding:11px 8px; border-radius:10px; font-weight:700; font-size:.92rem; color:var(--gris-700); transition:background .15s, color .15s;}
+  .auth-tab[aria-selected="true"]{background:var(--blanco); color:var(--azul-oscuro-1); box-shadow:0 2px 8px -3px rgba(8,28,51,.35);}
+  .tarjeta-auth .boton:disabled{opacity:.6; cursor:default;}
+  .auth-aviso{font-size:.84rem; color:var(--azul-brillante); font-weight:600; margin:0 0 10px;}
+  .auth-error{font-size:.84rem; color:#A23A1B; font-weight:700; margin:0 0 10px;}
+  .auth-aviso:empty, .auth-error:empty{display:none;}
+
+  @keyframes destacar{0%,60%{box-shadow:0 0 0 3px var(--azul-brillante);} 100%{box-shadow:0 0 0 0 transparent;}}
+  .tarjeta-reporte.nueva{animation:destacar 2.4s ease-out;}
+
+  /* ===================== NOTAS DE SEGUIMIENTO ===================== */
+  .bloque-notas{margin-top:24px; padding-top:22px; border-top:var(--borde);}
+  .bloque-notas h3{font-size:1.02rem;}
+  .nota-item{
+    background:var(--gris-100); border-radius:var(--radius-s); padding:14px 16px; margin-bottom:10px; border-left:4px solid var(--estado-revision);
+  }
+  .nota-item .nota-texto{color:var(--azul-oscuro-1); font-size:.9rem; margin:0 0 6px;}
+  .nota-item .nota-meta{font-size:.76rem; color:var(--gris-500); display:flex; gap:10px; flex-wrap:wrap;}
+  .nota-item .nota-meta strong{color:var(--gris-700);}
+  .form-nota{display:none; gap:10px; margin-top:14px; flex-direction:column;}
+  .form-nota.mostrar{display:flex;}
+
+  /* ===================== PANEL DEL TÉCNICO ===================== */
+  .panel-tecnico{
+    margin-top:24px; padding:20px; border-radius:var(--radius-m); background:var(--gris-100); border:1.5px dashed var(--gris-300);
+  }
+  .panel-tecnico h3{font-size:1rem; color:var(--azul-oscuro-2);}
+  .aviso-permiso{
+    display:none; align-items:center; gap:8px; background:#FDEDE8; color:#A23A1B; border:1px solid #F3C1AE;
+    padding:10px 14px; border-radius:var(--radius-s); font-size:.85rem; font-weight:600; margin-bottom:14px;
+  }
+  .aviso-permiso.mostrar{display:flex;}
+
+  /* ===================== ADJUNTAR IMÁGENES (formulario del técnico) ===================== */
+  .etiqueta-campo{font-size:.86rem; font-weight:700; color:var(--azul-oscuro-2);}
+  /* El input real queda oculto pero accesible por teclado; la "zona" es su <label>. */
+  .input-archivo{position:absolute; width:1px; height:1px; opacity:0; overflow:hidden; pointer-events:none;}
+  .zona-adjuntos{
+    display:flex; align-items:center; gap:14px; padding:16px 18px; cursor:pointer;
+    border:2px dashed var(--gris-300); border-radius:var(--radius-m); background:var(--gris-100);
+    color:var(--gris-700); font-size:.85rem; line-height:1.4;
+  }
+  .zona-adjuntos strong{display:block; color:var(--azul-oscuro-1); font-size:.93rem;}
+  .zona-adjuntos:hover, .zona-adjuntos.arrastrando, .zona-adjuntos:focus-within{border-color:var(--azul-brillante); background:#EEF5FF;}
+  .zona-adjuntos.llena{opacity:.55; cursor:not-allowed;}
+  .zona-icono{font-size:1.7rem; flex-shrink:0;}
+  .zona-adjuntos.ocupada{opacity:.6; pointer-events:none;}
+  .boton-camara{
+    display:flex; align-items:center; justify-content:center; gap:8px; padding:12px 16px; cursor:pointer;
+    border:1.5px solid var(--azul-brillante); border-radius:var(--radius-m); background:var(--blanco);
+    color:var(--azul-brillante); font-weight:700; font-size:.9rem;
+  }
+  .boton-camara:hover, .boton-camara:focus-within{background:#EEF5FF;}
+  .boton-camara.llena{opacity:.55; cursor:not-allowed;}
+  .boton-camara{width:100%; font-family:inherit;}
+  .camara{position:fixed; top:0; right:0; bottom:0; left:0; z-index:110; display:none; flex-direction:column; background:#000;}
+  .camara.abierta{display:flex;}
+  .camara video{flex:1; min-height:0; width:100%; object-fit:cover; background:#000; transition:opacity .1s;}
+  .camara.flash video{opacity:.3;}
+  .camara-info{position:absolute; top:0; left:0; right:0; margin:0; padding:calc(12px + var(--sai-top)) 12px 12px; text-align:center; color:#fff; font-weight:700; font-size:.92rem; background:linear-gradient(rgba(0,0,0,.55),transparent);}
+  .camara-barra{display:flex; align-items:center; justify-content:space-around; padding:14px 12px calc(14px + var(--sai-bottom)); background:rgba(8,28,51,.96);}
+  .camara-barra button{min-width:78px; padding:12px 14px; background:rgba(255,255,255,.12); color:#fff; border:1px solid rgba(255,255,255,.3); border-radius:var(--radius-s); font-weight:700; font-size:.9rem; font-family:inherit;}
+  .camara-barra .camara-disparo{width:70px; height:70px; min-width:0; padding:0; border-radius:50%; border:4px solid #fff; background:var(--azul-brillante);}
+  .camara-barra .camara-disparo:active{transform:scale(.9);}
+  .adjuntos-estado{font-size:.83rem; font-weight:600; color:var(--azul-brillante); margin:0;}
+  .adjuntos-estado:empty{display:none;}
+  .adjuntos-previa{display:grid; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:10px; margin-top:4px;}
+  .adjuntos-previa:empty{display:none;}
+  .adjunto{position:relative; aspect-ratio:1; border-radius:var(--radius-s); overflow:hidden; border:var(--borde); background:var(--gris-200);}
+  .adjunto img{width:100%; height:100%; object-fit:cover; display:block;}
+  .adjunto-quitar{
+    position:absolute; top:6px; right:6px; width:32px; height:32px; border-radius:50%; border:none;
+    background:rgba(8,28,51,.82); color:var(--blanco); font-size:.9rem; line-height:1;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .adjunto-quitar:hover{background:var(--estado-abierto);}
+  .adjuntos-contador{font-size:.78rem; color:var(--gris-500); margin:0;}
+  .adjuntos-error{font-size:.83rem; font-weight:600; color:#A23A1B; margin:0;}
+  .adjuntos-error:empty{display:none;}
+
+  /* ===================== IMÁGENES EN REPORTES Y SEGUIMIENTO (todos los roles las ven) ===================== */
+  .btn-ver-imagenes{
+    background:none; border:none; padding:0; font:inherit; color:var(--azul-brillante);
+    font-weight:700; text-decoration:underline; cursor:pointer;
+  }
+  .bloque-imagenes{margin-top:20px;}
+  .bloque-imagenes > span{display:block; font-size:.76rem; color:var(--gris-500); font-weight:700; text-transform:uppercase; letter-spacing:.03em;}
+  .galeria-reporte{display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:10px; margin-top:8px;}
+  .galeria-reporte button{padding:0; border:var(--borde); border-radius:var(--radius-s); overflow:hidden; aspect-ratio:1; background:var(--gris-200);}
+  .galeria-reporte button:hover{border-color:var(--azul-brillante);}
+  .galeria-reporte img{width:100%; height:100%; object-fit:cover; display:block;}
+
+  /* Visor para ampliar las imágenes */
+  .visor{
+    position:fixed; top:0; right:0; bottom:0; left:0; z-index:100; display:none; flex-direction:column; align-items:center; justify-content:center;
+    gap:12px; padding:calc(20px + var(--sai-top)) calc(20px + var(--sai-right)) calc(20px + var(--sai-bottom)) calc(20px + var(--sai-left)); background:rgba(8,28,51,.93);
+  }
+  .visor.abierto{display:flex;}
+  .visor img{max-width:100%; max-height:calc(100vh - 150px - var(--sai-top) - var(--sai-bottom)); border-radius:var(--radius-s); background:var(--blanco);}
+  .visor-barra{display:flex; align-items:center; gap:10px; color:var(--blanco); font-size:.88rem; flex-wrap:wrap; justify-content:center;}
+  .visor-barra button{
+    background:rgba(255,255,255,.12); color:var(--blanco); border:1px solid rgba(255,255,255,.3);
+    border-radius:var(--radius-s); padding:9px 16px; font-weight:700; font-size:.88rem;
+  }
+  .visor-barra button:hover:not(:disabled){background:rgba(255,255,255,.24);}
+  .visor-barra button:disabled{opacity:.35; cursor:default;}
+</style>
+</head>
+<body>
+
+<!-- ===================== ACCESO: NOMBRE + PIN (local, sin Internet) ===================== -->
+<section class="pantalla-auth" id="pantallaAcceso">
+  <form class="tarjeta-auth" id="formAcceso" autocomplete="off" novalidate>
+    <span class="marca-logo">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14.7 3.3a4.5 4.5 0 0 0-5.9 5.9L3 15v3h3l5.8-5.8a4.5 4.5 0 0 0 5.9-5.9l-2.6 2.6-2-2 2.6-2.6z" stroke="#FFFFFF" stroke-width="1.4" stroke-linejoin="round"/></svg>
+    </span>
+    <h1>TecnoAyuda</h1>
+    <span class="auth-eslogan">Reporta. Soluciona. Avanza.</span>
+    <div class="auth-tabs" role="tablist" aria-label="Acceso">
+      <button type="button" class="auth-tab" id="tabEntrar" role="tab" aria-selected="true">Entrar</button>
+      <button type="button" class="auth-tab" id="tabCrear" role="tab" aria-selected="false">Crear usuario</button>
+    </div>
+    <div class="campo"><label for="accesoNombre">Nombre del técnico</label><input type="text" id="accesoNombre" maxlength="40" autocomplete="off"></div>
+    <div class="campo"><label for="accesoPin">PIN <span class="ayuda">(4 a 6 números)</span></label><input type="password" id="accesoPin" inputmode="numeric" maxlength="6" autocomplete="off"></div>
+    <div class="campo oculto"><label for="accesoPin2">Repite el PIN</label><input type="password" id="accesoPin2" inputmode="numeric" maxlength="6" autocomplete="off"></div>
+    <p class="auth-error oculto" id="accesoSinAlmacen">⚠️ Este navegador no permite guardar datos: lo que registres se perderá al cerrar. Para conservarlo, ábrela desde su dirección web (https) o instálala desde el navegador.</p>
+    <p class="auth-aviso" id="accesoAviso"></p>
+    <p class="auth-error" id="accesoError" role="alert"></p>
+    <button type="button" class="boton boton-primario" id="btnAcceso">Entrar</button>
+  </form>
+</section>
+
+<!-- ===================== APLICACIÓN ===================== -->
+<div id="app" class="oculto">
+
+<!-- ===================== NAVBAR ===================== -->
+<header class="barra">
+  <div class="barra-interna">
+    <a href="#" class="marca" data-nav="inicio">
+      <!-- Espacio reservado para el logo oficial: reemplazar este bloque SVG por <img class="marca-logo" src="logo.png" alt="Logo TecnoAyuda"> -->
+      <span class="marca-logo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M14.7 3.3a4.5 4.5 0 0 0-5.9 5.9L3 15v3h3l5.8-5.8a4.5 4.5 0 0 0 5.9-5.9l-2.6 2.6-2-2 2.6-2.6z" stroke="#FFFFFF" stroke-width="1.4" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <span class="marca-texto"><strong>TecnoAyuda</strong><span>Soporte técnico institucional</span></span>
+    </a>
+
+    <button class="menu-hamburguesa" id="btnMenu" aria-label="Abrir menú">☰</button>
+
+    <nav class="principal" id="navPrincipal">
+      <button class="nav-boton" data-nav="inicio">Inicio</button>
+      <button class="nav-boton" data-nav="reportes">Reportes</button>
+      <button class="nav-boton" data-nav="seguimiento">Seguimiento</button>
+      <button class="nav-boton" data-nav="soluciones">Soluciones</button>
+      <button class="nav-boton" data-nav="nuevo">Nuevo reporte</button>
+      <button class="nav-boton" id="btnSalir" type="button">Salir</button>
+    </nav>
+
+    <button class="boton-nuevo-reporte" data-nav="nuevo">+ Nuevo reporte</button>
+  </div>
+</header>
+
+<main class="contenedor">
+
+  <!-- ===================== INICIO ===================== -->
+  <section class="vista activa" id="vista-inicio">
+    <div class="hero">
+      <div>
+        <span class="eslogan">Reporta. Soluciona. Avanza.</span>
+        <h1>Hola, <span id="saludoNombre"></span></h1>
+        <p>Registra una falla y sigue su solución.</p>
+        <div class="hero-botones"><button class="boton boton-primario" data-nav="nuevo">Nuevo reporte</button></div>
+      </div>
+    </div>
+
+    <div class="resumen">
+      <div class="tarjeta-resumen"><span class="punto abierto"></span><div><div class="num" id="numAbiertos">0</div><div class="etq">Reportes abiertos</div></div></div>
+      <div class="tarjeta-resumen"><span class="punto proceso"></span><div><div class="num" id="numProceso">0</div><div class="etq">En proceso</div></div></div>
+      <div class="tarjeta-resumen"><span class="punto resuelto"></span><div><div class="num" id="numResueltos">0</div><div class="etq">Solucionados</div></div></div>
+    </div>
+
+  </section>
+
+  <!-- ===================== NUEVO REPORTE ===================== -->
+  <section class="vista" id="vista-nuevo">
+    <div class="encabezado-seccion">
+      <div>
+        <h2>Nuevo reporte</h2>
+        <p class="sub">Describe el problema tecnológico con el mayor detalle posible para agilizar su solución.</p>
+      </div>
+    </div>
+
+    <div class="aviso-permiso" id="mensajeErrorReporte" role="alert"></div>
+    <div class="mensaje-confirmacion" id="mensajeConfirmacion">✔ Reporte enviado correctamente. Podrás consultarlo en "Reportes".</div>
+
+    <form class="tarjeta-form" id="formReporte">
+      <div class="fila-2">
+        <div class="campo">
+          <label for="campoCategoria">Categoría del problema</label>
+          <select id="campoCategoria" required>
+            <option value="" disabled selected>Selecciona una categoría</option>
+            <option>Hardware</option>
+            <option>Software</option>
+            <option>Red/Internet</option>
+            <option>Periféricos</option>
+            <option>Otro</option>
+          </select>
+        </div>
+        <div class="campo">
+          <label for="campoUbicacion">Ubicación</label>
+          <select id="campoUbicacion" required>
+            <option value="" disabled selected>Selecciona una ubicación</option>
+            <option>Laboratorio 1</option>
+            <option>Laboratorio 2</option>
+            <option>Aula</option>
+            <option>Sala de profesores</option>
+            <option>Oficina administrativa</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="campo">
+        <label for="campoDescripcion">Descripción del problema</label>
+        <textarea id="campoDescripcion" placeholder="Ejemplo: el computador se apaga solo después de 5 minutos de uso." required></textarea>
+      </div>
+
+      <div class="campo">
+        <span class="etiqueta-campo">Imágenes del problema <span class="ayuda">(opcional · hasta 4)</span></span>
+        <label class="zona-adjuntos" id="zonaAdjuntos" for="campoImagenes">
+          <span class="zona-icono" aria-hidden="true">📷</span>
+          <span><strong>Adjuntar imágenes</strong>Toca para elegir de la galería. También puedes arrastrarlas aquí.</span>
+        </label>
+        <input type="file" id="campoImagenes" class="input-archivo" accept="image/*" multiple>
+        <!-- Abre la cámara integrada (sin salir de la app). Si no está disponible, usa la cámara del sistema -->
+        <button type="button" class="boton-camara" id="botonCamara"><span aria-hidden="true">📸</span> Tomar foto</button>
+        <input type="file" id="campoCamara" class="input-archivo" accept="image/*" capture="environment">
+        <p class="adjuntos-estado" id="adjuntosEstado" role="status" aria-live="polite"></p>
+        <div class="adjuntos-previa" id="adjuntosPrevia"></div>
+        <p class="adjuntos-contador" id="adjuntosContador"></p>
+        <p class="adjuntos-error" id="adjuntosError" role="alert"></p>
+      </div>
+
+      <div class="campo">
+        <label for="campoEquipo">Equipo relacionado <span class="ayuda">(opcional)</span></label>
+        <input type="text" id="campoEquipo" placeholder="Ejemplo: PC-14, videobeam sala de profesores, router principal">
+      </div>
+
+      <div class="campo">
+        <label>Prioridad</label>
+        <div class="prioridad-opciones" id="grupoPrioridad">
+          <label class="chip-prioridad" data-p="Alta"><input type="radio" name="prioridad" value="Alta">Alta</label>
+          <label class="chip-prioridad" data-p="Media"><input type="radio" name="prioridad" value="Media" checked>Media</label>
+          <label class="chip-prioridad" data-p="Baja"><input type="radio" name="prioridad" value="Baja">Baja</label>
+        </div>
+      </div>
+
+      <button type="button" class="boton boton-primario" id="btnEnviarReporte">Enviar reporte</button>
+    </form>
+  </section>
+
+  <!-- ===================== MIS REPORTES ===================== -->
+  <section class="vista" id="vista-reportes">
+    <div class="encabezado-seccion">
+      <div>
+        <h2>Reportes</h2>
+        <p class="sub">Todos los reportes registrados en el sistema, con su categoría, ubicación y estado actual.</p>
+      </div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="boton boton-terciario" data-nav="historial">Ver historial completo</button>
+        <button class="boton boton-primario" data-nav="nuevo">+ Nuevo reporte</button>
+      </div>
+    </div>
+    <div class="barra-filtros">
+      <select id="filtroEstadoReportes">
+        <option value="">Todos los estados</option>
+        <option>Abierto</option>
+        <option>En revisión</option>
+        <option>En proceso</option>
+        <option>Resuelto</option>
+      </select>
+      <select id="filtroCategoriaReportes">
+        <option value="">Todas las categorías</option>
+        <option>Hardware</option>
+        <option>Software</option>
+        <option>Red/Internet</option>
+        <option>Periféricos</option>
+        <option>Otro</option>
+      </select>
+    </div>
+    <div class="lista-reportes" id="listaReportes"></div>
+  </section>
+
+  <!-- ===================== SEGUIMIENTO ===================== -->
+  <section class="vista" id="vista-seguimiento">
+    <div class="encabezado-seccion">
+      <div>
+        <h2>Seguimiento</h2>
+        <p class="sub">Selecciona un reporte para ver en qué etapa del proceso se encuentra.</p>
+      </div>
+    </div>
+
+    <div class="panel-seguimiento">
+      <div class="selector-seguimiento">
+        <select id="selectorSeguimiento"></select>
+      </div>
+
+      <div class="etapas" id="etapasSeguimiento"></div>
+
+      <div class="detalle-seguimiento" id="detalleSeguimiento"></div>
+    </div>
+  </section>
+
+  <!-- ===================== HISTORIAL (dentro de Reportes, accesible desde Reportes) ===================== -->
+  <section class="vista" id="vista-historial">
+    <div class="encabezado-seccion">
+      <div>
+        <h2>Historial de reportes</h2>
+        <p class="sub">Consulta el histórico completo de fallas registradas, filtrable por estado o categoría.</p>
+      </div>
+      <button class="boton boton-terciario" data-nav="reportes">← Volver a Reportes</button>
+    </div>
+    <div class="barra-filtros">
+      <select id="filtroEstadoHistorial">
+        <option value="">Todos los estados</option>
+        <option>Abierto</option>
+        <option>En revisión</option>
+        <option>En proceso</option>
+        <option>Resuelto</option>
+      </select>
+      <select id="filtroCategoriaHistorial">
+        <option value="">Todas las categorías</option>
+        <option>Hardware</option>
+        <option>Software</option>
+        <option>Red/Internet</option>
+        <option>Periféricos</option>
+        <option>Otro</option>
+      </select>
+    </div>
+    <div class="lista-reportes" id="listaHistorial"></div>
+  </section>
+
+  <!-- ===================== SOLUCIONES ===================== -->
+  <section class="vista" id="vista-soluciones">
+    <div class="encabezado-seccion">
+      <div>
+        <h2>Soluciones</h2>
+        <p class="sub">Ejemplos de problemas ya solucionados por el equipo de soporte técnico.</p>
+      </div>
+    </div>
+    <span class="aviso-demo">ⓘ Ejemplos de demostración</span>
+    <div class="rejilla-3">
+      <div class="tarjeta-solucion">
+        <span class="s-etiqueta">Hardware</span>
+        <h4>Equipo que no enciende</h4>
+        <p>Se revisó la fuente de poder y las conexiones internas; se reemplazó un cable de alimentación defectuoso.</p>
+      </div>
+      <div class="tarjeta-solucion">
+        <span class="s-etiqueta">Red/Internet</span>
+        <h4>Problemas de conexión a Internet</h4>
+        <p>Se reinició el equipo de red y se actualizó la configuración del punto de acceso del laboratorio.</p>
+      </div>
+      <div class="tarjeta-solucion">
+        <span class="s-etiqueta">Periféricos</span>
+        <h4>Problemas con periféricos</h4>
+        <p>Se reemplazó un teclado con conexión intermitente y se limpiaron los puertos USB del equipo.</p>
+      </div>
+      <div class="tarjeta-solucion">
+        <span class="s-etiqueta">Software</span>
+        <h4>Problemas de software</h4>
+        <p>Se reinstaló el programa afectado y se aplicaron las actualizaciones pendientes del sistema.</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <strong>TecnoAyuda</strong> · Proyecto productivo — Técnico en Sistemas Teleinformáticos<br>
+  I.E.M. Ciudadela Educativa de Pasto · Versión preliminar 1.0
+</footer>
+
+<!-- Visor para ampliar las imágenes de un reporte -->
+<div class="camara" id="camara" role="dialog" aria-modal="true" aria-label="Cámara">
+  <video id="camVideo" playsinline muted autoplay></video>
+  <p class="camara-info" id="camaraInfo" role="status"></p>
+  <div class="camara-barra">
+    <button type="button" id="camCerrar">Listo</button>
+    <button type="button" class="camara-disparo" id="camDisparar" aria-label="Tomar foto"></button>
+    <button type="button" id="camGirar" aria-label="Cambiar de cámara">🔄 Girar</button>
+  </div>
+</div>
+
+<div class="visor" id="visor" role="dialog" aria-modal="true" aria-label="Imágenes del reporte">
+  <img id="visorImg" alt="">
+  <div class="visor-barra">
+    <button type="button" id="visorAnterior">← Anterior</button>
+    <span id="visorInfo"></span>
+    <button type="button" id="visorSiguiente">Siguiente →</button>
+    <button type="button" id="visorCerrar">Cerrar</button>
+  </div>
+</div>
+
+</div><!-- fin #app -->
+
+<script>
+/* =====================================================================
+   TECNOAYUDA — LÓGICA DE LA APLICACIÓN (versión preliminar 1.0)
+   Todo funciona en el navegador con localStorage, sin backend ni APIs.
+===================================================================== */
+
+/* ---------- Errores visibles: si algo falla en un celular (sin consola), se muestra el mensaje en pantalla ---------- */
+function mostrarErrorGlobal(msg) {
+  let barra = document.getElementById("errorGlobal");
+  if (!barra) {
+    barra = document.createElement("div"); barra.id = "errorGlobal"; barra.setAttribute("role", "alert");
+    barra.style.cssText = "position:fixed;left:0;right:0;bottom:0;z-index:200;background:#A23A1B;color:#fff;padding:10px 14px;font:600 .85rem system-ui,sans-serif;";
+    document.body.appendChild(barra);
+  }
+  barra.textContent = "⚠️ Error: " + msg;
+}
+window.addEventListener("error", (e) => mostrarErrorGlobal(e.message));
+window.addEventListener("unhandledrejection", (e) => mostrarErrorGlobal((e.reason && e.reason.message) || e.reason));
+
+/* ---------- Almacenamiento ----------
+   Usa localStorage; si el navegador lo bloquea (por ejemplo, un archivo abierto desde el gestor de archivos
+   del celular), trabaja en memoria para que el acceso funcione, avisando que los datos no se conservarán. */
+const ALMACEN = (() => {
+  try {
+    const prueba = "__tecnoayuda_prueba";
+    localStorage.setItem(prueba, "1"); localStorage.removeItem(prueba);
+    return { persistente: true, get: (k) => localStorage.getItem(k), set: (k, v) => localStorage.setItem(k, v) };
+  } catch (e) {
+    const memoria = {};
+    return { persistente: false, get: (k) => (k in memoria ? memoria[k] : null), set: (k, v) => { memoria[k] = String(v); } };
+  }
+})();
+
+const ETAPAS = ["Abierto", "En revisión", "En proceso", "Resuelto"];
+const TITULOS_ETAPA = ["Reporte creado", "En revisión", "En proceso", "Solucionado"];
+
+/* ---------- Permisos por rol (sección 8 del brief) ---------- */
+const PERMISOS = {
+  tecnico: { ver: true, crearReporte: true, editar: true, cambiarEstado: true, agregarNotas: true, gestionTecnica: true }
+};
+function hasPermission(accion) {
+  if (!currentUser || !PERMISOS[currentUser.role]) return false;
+  return !!PERMISOS[currentUser.role][accion];
+}
+function denegarAccion() {
+  mostrarErrorGlobal("No tienes permisos para realizar esta acción.");
+  setTimeout(() => { const b = document.getElementById("errorGlobal"); if (b) b.remove(); }, 3500);
+}
+
+/* ---------- Navegación permitida por rol (sección 4 del brief) ---------- */
+const NAV_POR_ROL = {
+  tecnico: ["inicio", "reportes", "seguimiento", "soluciones", "nuevo"]
+};
+
+/* ---------- Persistencia por usuario: cada técnico guarda sus reportes y notas con su propia clave ---------- */
+function claveUsuario(tipo) { return "tecnoayuda_" + tipo + "_" + currentUser.id; }
+function leerLista(tipo) {
+  try { const v = JSON.parse(ALMACEN.get(claveUsuario(tipo))); return Array.isArray(v) ? v : []; }
+  catch (e) { return []; }
+}
+// Devuelve true si se pudo guardar. localStorage tiene un límite de pocos MB: con fotos puede llenarse.
+function guardarLista(tipo, lista) {
+  try { ALMACEN.set(claveUsuario(tipo), JSON.stringify(lista)); return true; }
+  catch (e) { console.warn("No se pudo guardar:", e); return false; }
+}
+function guardarReportes(lista) { return guardarLista("reportes", lista); }
+function guardarNotas(lista) { return guardarLista("notas", lista); }
+let reportes = [], notas = [];
+
+/* ---------- Usuario único: el técnico (app offline, sin inicio de sesión ni roles) ---------- */
+let currentUser = null;   // { id, name, role } — se define al iniciar sesión con nombre + PIN
+
+/* ---------- Utilidades ---------- */
+function siguienteId() {
+  const numeros = reportes.map(r => parseInt(r.id.replace("#", ""), 10) || 0);
+  const max = numeros.length ? Math.max(...numeros) : 0;
+  return "#" + String(max + 1).padStart(3, "0");
+}
+// Fecha y hora locales (toISOString usa UTC y en Colombia cambiaría de día desde las 7 p. m.)
+function fechaHoy() {
+  const d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+function horaAhora() {
+  const d = new Date();
+  return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+}
+// Todo texto escrito por el técnico se escapa antes de mostrarlo (evita que "<" o comillas rompan la pantalla).
+const ESC = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+function esc(t) { return String(t == null ? "" : t).replace(/[&<>"']/g, c => ESC[c]); }
+function claseBadgeEstado(estado) {
+  return "badge " + estado.replace(" ", "_");
+}
+
+/* ---------- Navegación entre secciones (SPA sin recargar) ---------- */
+const vistas = document.querySelectorAll("section.vista");
+const botonesNav = document.querySelectorAll("[data-nav]");
+const navPrincipal = document.getElementById("navPrincipal");
+
+function vistaPermitida(nombre) {
+  // "historial" y la marca (inicio) siempre son accesibles para cualquier rol con sesión activa;
+  // el resto de vistas se restringen según NAV_POR_ROL (sección 4 del brief).
+  if (!currentUser) return false;
+  if (nombre === "historial") return true;
+  return NAV_POR_ROL[currentUser.role].includes(nombre);
+}
+
+let vistaActual = null;   // para no repetir entradas del historial
+function mostrarVista(nombre, opciones) {
+  if (!vistaPermitida(nombre)) { denegarAccion(); return; }
+  // Historial: así el botón "Atrás" de Android vuelve a la sección anterior en vez de cerrar la app.
+  if (!(opciones && opciones.desdeHistorial) && nombre !== vistaActual) {
+    try {
+      const estado = { tecnoayuda: nombre };
+      if (vistaActual === null) history.replaceState(estado, ""); else history.pushState(estado, "");
+    } catch (e) { /* algunos contenedores aislados no permiten usar el historial */ }
+  }
+  vistaActual = nombre;
+  vistas.forEach(v => v.classList.toggle("activa", v.id === "vista-" + nombre));
+  document.querySelectorAll(".nav-boton").forEach(b => b.classList.toggle("activo", b.dataset.nav === nombre));
+  navPrincipal.classList.remove("abierto");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  if (nombre === "reportes") renderizarLista("listaReportes", obtenerFiltrados("filtroEstadoReportes", "filtroCategoriaReportes"));
+  if (nombre === "historial") renderizarLista("listaHistorial", obtenerFiltrados("filtroEstadoHistorial", "filtroCategoriaHistorial"));
+  if (nombre === "seguimiento") inicializarSeguimiento();
+  if (nombre === "inicio") actualizarContadores();
+}
+botonesNav.forEach(b => b.addEventListener("click", () => mostrarVista(b.dataset.nav)));
+window.addEventListener("popstate", (e) => {
+  if (!currentUser) return;
+  const v = e.state && e.state.tecnoayuda;
+  if (v && vistaPermitida(v)) mostrarVista(v, { desdeHistorial: true });
+});
+document.getElementById("btnMenu").addEventListener("click", () => navPrincipal.classList.toggle("abierto"));
+
+/* ---------- Contadores de inicio ---------- */
+function actualizarContadores() {
+  const abiertos = reportes.filter(r => r.estado === "Abierto" || r.estado === "En revisión").length;
+  const proceso = reportes.filter(r => r.estado === "En proceso").length;
+  const resueltos = reportes.filter(r => r.estado === "Resuelto").length;
+  document.getElementById("numAbiertos").textContent = abiertos;
+  document.getElementById("numProceso").textContent = proceso;
+  document.getElementById("numResueltos").textContent = resueltos;
+}
+
+/* ---------- Render de tarjetas de reporte (reutilizado en Reportes e Historial) ---------- */
+function tarjetaReporteHTML(r) {
+  return `
+    <div class="tarjeta-reporte" data-estado="${r.estado}" data-id="${r.id}">
+      <div>
+        <div class="rep-cabecera">
+          <span class="rep-id">${r.id}</span>
+          <span class="${claseBadgeEstado(r.estado)}">${r.estado}</span>
+          <span class="badge badge-cat">${esc(r.categoria)}</span>
+          ${r.demo ? '<span class="badge badge-demo">Dato de demostración</span>' : ""}
+        </div>
+        <p class="rep-desc">${esc(r.descripcion)}</p>
+        <div class="rep-meta">
+          <span>📍 ${esc(r.ubicacion)}</span>
+          <span>🖥️ ${esc(r.equipo) || "No especificado"}</span>
+          <span>⚑ Prioridad ${r.prioridad}</span>
+          <span>🗓️ ${r.fecha}${r.hora ? " · " + r.hora : ""}</span>
+          ${r.responsable ? `<span>🧑‍🔧 Responsable: ${esc(r.responsable)}</span>` : ""}
+          ${(r.imagenes || []).length ? `<span>📷 <button type="button" class="btn-ver-imagenes" data-ver-imagenes="${r.id}">${r.imagenes.length} ${r.imagenes.length === 1 ? "imagen" : "imágenes"}</button></span>` : ""}
+        </div>
+      </div>
+      <div class="rep-acciones">
+        ${hasPermission("cambiarEstado") ? `
+        <select data-cambiar-estado="${r.id}">
+          ${ETAPAS.map(e => `<option value="${e}" ${e === r.estado ? "selected" : ""}>${e}</option>`).join("")}
+        </select>` : ""}
+      </div>
+    </div>`;
+}
+
+function renderizarLista(idContenedor, lista) {
+  const contenedor = document.getElementById(idContenedor);
+  if (!lista.length) {
+    contenedor.innerHTML = `<div class="vacio">No hay reportes que coincidan con este filtro.</div>`;
+    return;
+  }
+  contenedor.innerHTML = lista.slice().reverse().map(tarjetaReporteHTML).join("");
+  contenedor.querySelectorAll("[data-cambiar-estado]").forEach(select => {
+    select.addEventListener("change", (e) => {
+      cambiarEstado(e.target.dataset.cambiarEstado, e.target.value);
+    });
+  });
+  // "📷 N imágenes": lleva al seguimiento de ese reporte, donde está la galería.
+  contenedor.querySelectorAll("[data-ver-imagenes]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      mostrarVista("seguimiento");
+      inicializarSeguimiento(btn.dataset.verImagenes);
+    });
+  });
+}
+
+function obtenerFiltrados(idEstado, idCategoria) {
+  const estado = document.getElementById(idEstado).value;
+  const categoria = document.getElementById(idCategoria).value;
+  return reportes.filter(r => (!estado || r.estado === estado) && (!categoria || r.categoria === categoria));
+}
+
+["filtroEstadoReportes", "filtroCategoriaReportes"].forEach(id =>
+  document.getElementById(id).addEventListener("change", () =>
+    renderizarLista("listaReportes", obtenerFiltrados("filtroEstadoReportes", "filtroCategoriaReportes"))
+  )
+);
+["filtroEstadoHistorial", "filtroCategoriaHistorial"].forEach(id =>
+  document.getElementById(id).addEventListener("change", () =>
+    renderizarLista("listaHistorial", obtenerFiltrados("filtroEstadoHistorial", "filtroCategoriaHistorial"))
+  )
+);
+
+/* ---------- Cambiar estado (solo técnico, sección 5 y 7 del brief) ---------- */
+function cambiarEstado(id, nuevoEstado) {
+  if (!hasPermission("cambiarEstado")) { denegarAccion(); renderizarLista("listaReportes", obtenerFiltrados("filtroEstadoReportes", "filtroCategoriaReportes")); return; }
+  const r = reportes.find(x => x.id === id);
+  if (!r) return;
+  r.estado = nuevoEstado;
+  guardarReportes(reportes);
+  renderizarLista("listaReportes", obtenerFiltrados("filtroEstadoReportes", "filtroCategoriaReportes"));
+  renderizarLista("listaHistorial", obtenerFiltrados("filtroEstadoHistorial", "filtroCategoriaHistorial"));
+  actualizarContadores();
+  if (document.getElementById("vista-seguimiento").classList.contains("activa")) {
+    inicializarSeguimiento(id);
+  }
+}
+
+/* ---------- Formulario de nuevo reporte ---------- */
+document.querySelectorAll(".chip-prioridad").forEach(chip => {
+  chip.addEventListener("click", () => {
+    document.querySelectorAll(".chip-prioridad").forEach(c => c.classList.remove("marcada"));
+    chip.classList.add("marcada");
+    chip.querySelector("input").checked = true;
+  });
+});
+document.querySelector('.chip-prioridad[data-p="Media"]').classList.add("marcada");
+
+/* ---------- Imágenes adjuntas al crear un reporte (solo quien puede crear reportes: técnico) ----------
+   Las fotos se reducen y comprimen en el navegador antes de guardarlas (data URL JPEG),
+   porque localStorage tiene poco espacio. En una versión con backend irían a un almacenamiento
+   de archivos (por ejemplo Firebase Storage) y en el reporte solo quedaría su dirección. */
+const MAX_IMAGENES = 4;        // por reporte
+const MAX_LADO_PX = 1280;      // lado mayor tras reducir
+const CALIDAD_JPEG = 0.8;
+// WebP pesa menos que JPEG con la misma calidad; si el celular no lo soporta se usa JPEG.
+const SOPORTA_WEBP = document.createElement("canvas").toDataURL("image/webp").startsWith("data:image/webp");
+function codificarImagen(lienzo) { return lienzo.toDataURL(SOPORTA_WEBP ? "image/webp" : "image/jpeg", CALIDAD_JPEG); }
+const MAX_ARCHIVO_MB = 15;     // tamaño máximo de cada archivo original
+let adjuntosPendientes = [];   // data URLs de las imágenes aún no enviadas
+
+const zonaAdjuntos = document.getElementById("zonaAdjuntos");
+const campoImagenes = document.getElementById("campoImagenes");
+const campoCamara = document.getElementById("campoCamara");
+const botonCamara = document.getElementById("botonCamara");
+let procesandoAdjuntos = false;
+
+/* ---------- Cámara integrada (no necesita Internet) ----------
+   Abre la cámara dentro de la app, permite varias fotos seguidas y cambiar entre cámara trasera y frontal.
+   Si el celular niega el permiso o no la soporta, el botón pasa a usar la cámara del sistema (input capture). */
+const camara = document.getElementById("camara");
+const camVideo = document.getElementById("camVideo");
+let camFlujo = null, camModo = "environment", camNativa = false;
+
+function actualizarInfoCamara() {
+  document.getElementById("camaraInfo").textContent = `Fotos: ${adjuntosPendientes.length} de ${MAX_IMAGENES}`;
+}
+function pararCamara() {
+  if (camFlujo) camFlujo.getTracks().forEach(t => t.stop());
+  camFlujo = null; camVideo.srcObject = null;
+}
+function cerrarCamara() { pararCamara(); camara.classList.remove("abierta"); }
+
+async function iniciarCamara() {
+  pararCamara();
+  const flujo = await navigator.mediaDevices.getUserMedia({
+    video: { facingMode: { ideal: camModo }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false });
+  if (!camara.classList.contains("abierta")) { flujo.getTracks().forEach(t => t.stop()); return; }  // se cerró mientras cargaba
+  camFlujo = flujo; camVideo.srcObject = flujo;
+  try { await camVideo.play(); } catch (e) {}
+}
+
+botonCamara.addEventListener("click", async () => {
+  if (!hasPermission("crearReporte")) { denegarAccion(); return; }
+  mostrarErrorAdjuntos("");
+  if (camNativa || !(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) { campoCamara.click(); return; }
+  camara.classList.add("abierta");
+  actualizarInfoCamara();
+  try { await iniciarCamara(); }
+  catch (e) {
+    cerrarCamara();
+    camNativa = true;   // el siguiente toque usa la cámara del sistema
+    const sinPermiso = e && (e.name === "NotAllowedError" || e.name === "SecurityError");
+    mostrarErrorAdjuntos(sinPermiso
+      ? "No hay permiso para usar la cámara. Permítela en los ajustes del sitio del navegador (candado junto a la dirección), o toca otra vez el botón para usar la cámara del sistema."
+      : "No se pudo abrir la cámara integrada. Toca otra vez el botón para usar la cámara del sistema.");
+  }
+});
+
+document.getElementById("camDisparar").addEventListener("click", () => {
+  if (!camVideo.videoWidth || adjuntosPendientes.length >= MAX_IMAGENES) return;
+  const escala = Math.min(1, MAX_LADO_PX / Math.max(camVideo.videoWidth, camVideo.videoHeight));
+  const lienzo = document.createElement("canvas");
+  lienzo.width = Math.round(camVideo.videoWidth * escala);
+  lienzo.height = Math.round(camVideo.videoHeight * escala);
+  lienzo.getContext("2d").drawImage(camVideo, 0, 0, lienzo.width, lienzo.height);
+  adjuntosPendientes.push(codificarImagen(lienzo));
+  if (navigator.vibrate) navigator.vibrate(30);
+  camara.classList.add("flash"); setTimeout(() => camara.classList.remove("flash"), 120);
+  renderizarAdjuntos(); actualizarInfoCamara();
+  if (adjuntosPendientes.length >= MAX_IMAGENES) setTimeout(cerrarCamara, 450);   // llegó al máximo
+});
+
+document.getElementById("camGirar").addEventListener("click", async () => {
+  const anterior = camModo;
+  camModo = camModo === "environment" ? "user" : "environment";
+  try { await iniciarCamara(); }
+  catch (e) {   // el equipo no tiene la otra cámara: volver a la anterior
+    camModo = anterior;
+    try { await iniciarCamara(); } catch (e2) { cerrarCamara(); }
+  }
+});
+document.getElementById("camCerrar").addEventListener("click", cerrarCamara);
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && camara.classList.contains("abierta")) cerrarCamara(); });
+// Si la app pasa a segundo plano, se libera la cámara.
+document.addEventListener("visibilitychange", () => { if (document.hidden) cerrarCamara(); });
+
+function comprimirImagen(archivo) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(archivo);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const escala = Math.min(1, MAX_LADO_PX / Math.max(img.naturalWidth, img.naturalHeight));
+      const w = Math.max(1, Math.round(img.naturalWidth * escala));
+      const h = Math.max(1, Math.round(img.naturalHeight * escala));
+      const lienzo = document.createElement("canvas");
+      lienzo.width = w; lienzo.height = h;
+      const ctx = lienzo.getContext("2d");
+      ctx.fillStyle = "#FFFFFF";            // fondo blanco para PNG/WEBP con transparencia
+      ctx.fillRect(0, 0, w, h);
+      ctx.drawImage(img, 0, 0, w, h);
+      resolve(codificarImagen(lienzo));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("No se pudo leer la imagen")); };
+    img.src = url;
+  });
+}
+
+function mostrarErrorAdjuntos(texto) {
+  document.getElementById("adjuntosError").textContent = texto || "";
+}
+
+function renderizarAdjuntos() {
+  const previa = document.getElementById("adjuntosPrevia");
+  previa.innerHTML = adjuntosPendientes.map((src, i) => `
+    <div class="adjunto">
+      <img src="${src}" alt="Imagen adjunta ${i + 1}">
+      <button type="button" class="adjunto-quitar" data-quitar-adjunto="${i}" aria-label="Quitar imagen ${i + 1}">✕</button>
+    </div>`).join("");
+  previa.querySelectorAll("[data-quitar-adjunto]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      adjuntosPendientes.splice(Number(btn.dataset.quitarAdjunto), 1);
+      mostrarErrorAdjuntos("");
+      renderizarAdjuntos();
+    });
+  });
+  const lleno = adjuntosPendientes.length >= MAX_IMAGENES;
+  zonaAdjuntos.classList.toggle("llena", lleno);
+  botonCamara.classList.toggle("llena", lleno);
+  campoImagenes.disabled = lleno;
+  campoCamara.disabled = lleno;
+  botonCamara.disabled = lleno;
+  document.getElementById("adjuntosContador").textContent =
+    adjuntosPendientes.length ? `${adjuntosPendientes.length} de ${MAX_IMAGENES} imágenes` : "";
+}
+
+// Algunos celulares entregan la foto con tipo desconocido (vacío o "application/octet-stream"):
+// en ese caso se decide por la extensión, y si no tiene, se intenta leer como imagen
+// (si no lo es, la lectura falla y se avisa).
+function pareceImagen(archivo) {
+  const tipo = archivo.type;
+  if (tipo && tipo !== "application/octet-stream") return tipo.startsWith("image/");
+  return /\.(jpe?g|png|webp|gif|bmp|avif|heic|heif)$/i.test(archivo.name) || !/\.[a-z0-9]+$/i.test(archivo.name);
+}
+function esHeic(archivo) { return /heic|heif/i.test(archivo.type) || /\.(heic|heif)$/i.test(archivo.name); }
+
+async function agregarArchivos(listaArchivos) {
+  if (!hasPermission("crearReporte")) { denegarAccion(); return; }
+  if (procesandoAdjuntos) return;
+  const archivos = Array.from(listaArchivos);   // copia: el input se vacía al terminar
+  if (!archivos.length) return;
+  mostrarErrorAdjuntos("");
+  procesandoAdjuntos = true;
+  zonaAdjuntos.classList.add("ocupada");
+  const estado = document.getElementById("adjuntosEstado");
+  const problemas = [];
+  try {
+    for (let i = 0; i < archivos.length; i++) {
+      const archivo = archivos[i];
+      if (adjuntosPendientes.length >= MAX_IMAGENES) {
+        problemas.push(`Solo se pueden adjuntar ${MAX_IMAGENES} imágenes por reporte.`);
+        break;
+      }
+      estado.textContent = archivos.length > 1 ? `Procesando imagen ${i + 1} de ${archivos.length}…` : "Procesando imagen…";
+      if (!pareceImagen(archivo)) { problemas.push(`“${archivo.name}” no es una imagen.`); continue; }
+      if (archivo.size > MAX_ARCHIVO_MB * 1024 * 1024) { problemas.push(`“${archivo.name}” supera ${MAX_ARCHIVO_MB} MB.`); continue; }
+      try {
+        adjuntosPendientes.push(await comprimirImagen(archivo));
+      } catch (e) {
+        problemas.push(esHeic(archivo)
+          ? `“${archivo.name}” está en formato HEIC y este dispositivo no puede abrirlo. Usa una foto JPG o PNG.`
+          : `No se pudo leer “${archivo.name}”. Prueba con una foto JPG o PNG.`);
+      }
+    }
+  } finally {
+    procesandoAdjuntos = false;
+    zonaAdjuntos.classList.remove("ocupada");
+    estado.textContent = "";
+    renderizarAdjuntos();
+    if (problemas.length) mostrarErrorAdjuntos(problemas.join(" "));
+  }
+}
+
+function limpiarAdjuntos() {
+  cerrarCamara();
+  adjuntosPendientes = [];
+  campoImagenes.value = "";
+  campoCamara.value = "";
+  mostrarErrorAdjuntos("");
+  renderizarAdjuntos();
+}
+
+// Galería y cámara usan el mismo proceso. El input se vacía después para poder elegir la misma foto otra vez.
+[campoImagenes, campoCamara].forEach(input => {
+  input.addEventListener("change", () => {
+    agregarArchivos(input.files).then(() => { input.value = ""; });
+  });
+});
+["dragenter", "dragover"].forEach(ev => zonaAdjuntos.addEventListener(ev, (e) => {
+  e.preventDefault(); zonaAdjuntos.classList.add("arrastrando");
+}));
+["dragleave", "drop"].forEach(ev => zonaAdjuntos.addEventListener(ev, (e) => {
+  e.preventDefault(); zonaAdjuntos.classList.remove("arrastrando");
+}));
+zonaAdjuntos.addEventListener("drop", (e) => { if (e.dataTransfer && e.dataTransfer.files.length) agregarArchivos(e.dataTransfer.files); });
+
+const formReporte = document.getElementById("formReporte");
+formReporte.addEventListener("submit", (e) => e.preventDefault());
+document.getElementById("btnEnviarReporte").addEventListener("click", enviarReporte);
+
+function enviarReporte() {
+  if (!hasPermission("crearReporte")) { denegarAccion(); return; }
+  const categoria = document.getElementById("campoCategoria").value;
+  const ubicacion = document.getElementById("campoUbicacion").value;
+  const descripcion = document.getElementById("campoDescripcion").value.trim();
+  const equipo = document.getElementById("campoEquipo").value.trim();
+  const prioridad = document.querySelector('input[name="prioridad"]:checked').value;
+
+  const errorReporte = document.getElementById("mensajeErrorReporte");
+  if (!categoria || !ubicacion || !descripcion) {
+    errorReporte.textContent = "Completa la categoría, la ubicación y la descripción del problema.";
+    errorReporte.classList.add("mostrar");
+    return;
+  }
+
+  const nuevoReporte = {
+    id: siguienteId(),
+    categoria, ubicacion, descripcion, equipo, prioridad,
+    estado: "Abierto",
+    fecha: fechaHoy(), hora: horaAhora(),
+    demo: false, creadoPor: currentUser.name,
+    responsable: currentUser.name, diagnostico: "", solucion: "",
+    imagenes: adjuntosPendientes.slice()
+  };
+  reportes.push(nuevoReporte);
+  if (!guardarReportes(reportes)) {
+    // Sin espacio en el navegador: se deshace y se conserva lo que el técnico escribió.
+    reportes.pop();
+    errorReporte.textContent = "⚠️ No se pudo guardar el reporte: el almacenamiento del navegador está lleno. Quita alguna imagen o reduce su cantidad e inténtalo de nuevo.";
+    errorReporte.classList.add("mostrar");
+    return;
+  }
+  errorReporte.classList.remove("mostrar");
+
+  const msg = document.getElementById("mensajeConfirmacion");
+  msg.classList.add("mostrar");
+  msg.textContent = `✔ Reporte ${nuevoReporte.id} enviado correctamente. Podrás consultarlo en "Reportes".`;
+
+  formReporte.reset();
+  limpiarAdjuntos();
+  document.querySelectorAll(".chip-prioridad").forEach(c => c.classList.remove("marcada"));
+  document.querySelector('.chip-prioridad[data-p="Media"]').classList.add("marcada");
+  document.querySelector('input[name="prioridad"][value="Media"]').checked = true;
+
+  actualizarContadores();
+
+  setTimeout(() => {
+    msg.classList.remove("mostrar");
+    if (!currentUser) return;   // si salió de la sesión mientras tanto
+    document.getElementById("filtroEstadoReportes").value = "";      // para que el nuevo reporte no quede oculto por un filtro
+    document.getElementById("filtroCategoriaReportes").value = "";
+    mostrarVista("reportes");
+    const tarjeta = document.querySelector(`#listaReportes [data-id="${nuevoReporte.id}"]`);
+    if (tarjeta) { tarjeta.classList.add("nueva"); tarjeta.scrollIntoView({ block: "center", behavior: "smooth" }); }
+  }, 1400);
+}
+
+/* ---------- Seguimiento ---------- */
+function inicializarSeguimiento(idPreseleccionado) {
+  const selector = document.getElementById("selectorSeguimiento");
+  selector.innerHTML = reportes
+    .slice().reverse()
+    .map(r => `<option value="${r.id}">${r.id} · ${esc(r.categoria)} · ${esc(r.descripcion.slice(0, 40))}</option>`)
+    .join("");
+  if (idPreseleccionado) selector.value = idPreseleccionado;
+  renderizarSeguimiento(selector.value);
+}
+document.getElementById("selectorSeguimiento").addEventListener("change", (e) => renderizarSeguimiento(e.target.value));
+
+function renderizarSeguimiento(id) {
+  const r = reportes.find(x => x.id === id);
+  const contEtapas = document.getElementById("etapasSeguimiento");
+  const contDetalle = document.getElementById("detalleSeguimiento");
+  if (!r) {
+    contEtapas.innerHTML = "";
+    contDetalle.innerHTML = `<div class="vacio">Aún no hay reportes registrados.</div>`;
+    return;
+  }
+  const indiceActual = ETAPAS.indexOf(r.estado);
+
+  contEtapas.innerHTML = TITULOS_ETAPA.map((titulo, i) => {
+    let clase = "";
+    if (i < indiceActual) clase = "completada";
+    else if (i === indiceActual) clase = "actual";
+    return `
+      <div class="etapa ${clase}">
+        <div class="linea"></div>
+        <div class="circulo">${i < indiceActual ? "✓" : i + 1}</div>
+        <div class="titulo-etapa">${titulo}</div>
+      </div>`;
+  }).join("");
+
+  const notasDelReporte = notas.filter(n => n.reporteId === r.id);
+
+  contDetalle.innerHTML = `
+    <h3>Detalle del reporte ${r.id}</h3>
+    <div class="grid-detalle">
+      <div><span>Categoría</span><p>${esc(r.categoria)}</p></div>
+      <div><span>Estado actual</span><p>${r.estado}</p></div>
+      <div><span>Ubicación</span><p>${esc(r.ubicacion)}</p></div>
+      <div><span>Equipo relacionado</span><p>${esc(r.equipo) || "No especificado"}</p></div>
+      <div><span>Prioridad</span><p>${r.prioridad}</p></div>
+      <div><span>Fecha de registro</span><p>${r.fecha}</p></div>
+      <div><span>Responsable</span><p>${esc(r.responsable) || "Sin asignar"}</p></div>
+      <div><span>Diagnóstico</span><p>${esc(r.diagnostico) || "Aún sin diagnóstico"}</p></div>
+      <div style="grid-column:1/-1;"><span>Solución aplicada</span><p>${esc(r.solucion) || "Aún sin solución registrada"}</p></div>
+    </div>
+
+    ${(r.imagenes || []).length ? `
+    <div class="bloque-imagenes">
+      <span>Imágenes del problema</span>
+      <div class="galeria-reporte">
+        ${r.imagenes.map((src, i) => `
+          <button type="button" data-abrir-imagen="${i}" aria-label="Ampliar imagen ${i + 1} de ${r.imagenes.length}">
+            <img src="${src}" alt="Imagen ${i + 1} del reporte ${r.id}">
+          </button>`).join("")}
+      </div>
+    </div>` : ""}
+
+    ${hasPermission("cambiarEstado") ? `
+    <div class="campo" style="margin-top:20px; max-width:280px;">
+      <label for="cambioEstadoSeguimiento">Cambiar estado</label>
+      <select id="cambioEstadoSeguimiento">
+        ${ETAPAS.map(e => `<option value="${e}" ${e === r.estado ? "selected" : ""}>${e}</option>`).join("")}
+      </select>
+    </div>` : ""}
+
+    ${hasPermission("gestionTecnica") ? `
+    <div class="panel-tecnico">
+      <h3>Panel del técnico</h3>
+      <p style="margin-bottom:14px;">Solo el rol Técnico puede editar esta información (asignación, diagnóstico y solución).</p>
+      <div class="fila-2">
+        <div class="campo">
+          <label for="campoResponsable">Asignar responsable</label>
+          <input type="text" id="campoResponsable" value="${esc(r.responsable)}" placeholder="Nombre del técnico">
+        </div>
+        <div class="campo">
+          <label for="campoDiagnostico">Diagnóstico</label>
+          <input type="text" id="campoDiagnostico" value="${esc(r.diagnostico)}" placeholder="Ejemplo: fuente de poder dañada">
+        </div>
+      </div>
+      <div class="campo">
+        <label for="campoSolucion">Solución aplicada</label>
+        <textarea id="campoSolucion" placeholder="Describe la solución aplicada al problema">${esc(r.solucion)}</textarea>
+      </div>
+      <div class="hero-botones" style="margin-top:4px;">
+        <button class="boton boton-primario" id="btnGuardarTecnico" type="button">Guardar información técnica</button>
+        <button class="boton boton-terciario" id="btnMarcarSolucionado" type="button">Marcar como solucionado</button>
+      </div>
+    </div>` : ""}
+
+    <div class="bloque-notas">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+        <h3>Notas de seguimiento</h3>
+        ${hasPermission("agregarNotas") ? `<button class="boton boton-secundario" id="btnMostrarFormNota" type="button" style="background:var(--azul-brillante); border:none;">Agregar nota</button>` : ""}
+      </div>
+      <div id="listaNotas">
+        ${notasDelReporte.length ? notasDelReporte.map(n => `
+          <div class="nota-item">
+            <p class="nota-texto">“${esc(n.texto)}”</p>
+            <div class="nota-meta"><strong>${esc(n.autor)}</strong><span>${n.fecha} · ${n.hora}</span></div>
+          </div>`).join("") : `<p style="font-size:.85rem;">Todavía no hay notas registradas para este reporte.</p>`}
+      </div>
+      ${hasPermission("agregarNotas") ? `
+      <div class="form-nota" id="formNota">
+        <textarea id="campoTextoNota" placeholder="Escribe tu observación sobre este reporte..."></textarea>
+        <div class="hero-botones">
+          <button class="boton boton-primario" id="btnGuardarNota" type="button">Guardar nota</button>
+        </div>
+      </div>` : ""}
+    </div>`;
+
+  // Ampliar imágenes del reporte
+  contDetalle.querySelectorAll("[data-abrir-imagen]").forEach(btn => {
+    btn.addEventListener("click", () => abrirVisor(r.id, Number(btn.dataset.abrirImagen), btn));
+  });
+
+  // Cambiar estado (técnico)
+  const selectEstado = document.getElementById("cambioEstadoSeguimiento");
+  if (selectEstado) selectEstado.addEventListener("change", (e) => cambiarEstado(r.id, e.target.value));
+
+  // Panel técnico: guardar información y marcar como solucionado
+  const btnGuardarTecnico = document.getElementById("btnGuardarTecnico");
+  if (btnGuardarTecnico) btnGuardarTecnico.addEventListener("click", () => guardarInformacionTecnica(r.id));
+  const btnMarcarSolucionado = document.getElementById("btnMarcarSolucionado");
+  if (btnMarcarSolucionado) btnMarcarSolucionado.addEventListener("click", () => marcarComoSolucionado(r.id));
+
+  // Notas de seguimiento
+  const btnMostrarFormNota = document.getElementById("btnMostrarFormNota");
+  if (btnMostrarFormNota) btnMostrarFormNota.addEventListener("click", () => {
+    document.getElementById("formNota").classList.toggle("mostrar");
+  });
+  const btnGuardarNota = document.getElementById("btnGuardarNota");
+  if (btnGuardarNota) btnGuardarNota.addEventListener("click", () => agregarNota(r.id));
+}
+
+/* ---------- Visor para ampliar imágenes (lo pueden usar todos los roles; solo lectura) ---------- */
+const visor = document.getElementById("visor");
+let visorReporteId = null, visorIndice = 0, visorDisparador = null;
+
+function dibujarVisor() {
+  const r = reportes.find(x => x.id === visorReporteId);
+  const imgs = (r && r.imagenes) || [];
+  if (!imgs.length) { cerrarVisor(); return; }
+  document.getElementById("visorImg").src = imgs[visorIndice];
+  document.getElementById("visorImg").alt = `Imagen ${visorIndice + 1} del reporte ${r.id}`;
+  document.getElementById("visorInfo").textContent = `Reporte ${r.id} · imagen ${visorIndice + 1} de ${imgs.length}`;
+  document.getElementById("visorAnterior").disabled = visorIndice === 0;
+  document.getElementById("visorSiguiente").disabled = visorIndice === imgs.length - 1;
+}
+function abrirVisor(reporteId, indice, disparador) {
+  visorReporteId = reporteId; visorIndice = indice; visorDisparador = disparador || null;
+  dibujarVisor();
+  visor.classList.add("abierto");
+  document.getElementById("visorCerrar").focus();
+}
+function cerrarVisor() {
+  visor.classList.remove("abierto");
+  document.getElementById("visorImg").src = "";
+  if (visorDisparador && document.contains(visorDisparador)) visorDisparador.focus();
+  visorDisparador = null;
+}
+document.getElementById("visorCerrar").addEventListener("click", cerrarVisor);
+document.getElementById("visorAnterior").addEventListener("click", () => { if (visorIndice > 0) { visorIndice--; dibujarVisor(); } });
+document.getElementById("visorSiguiente").addEventListener("click", () => {
+  const r = reportes.find(x => x.id === visorReporteId);
+  if (r && visorIndice < r.imagenes.length - 1) { visorIndice++; dibujarVisor(); }
+});
+visor.addEventListener("click", (e) => { if (e.target === visor) cerrarVisor(); });
+document.addEventListener("keydown", (e) => {
+  if (!visor.classList.contains("abierto")) return;
+  if (e.key === "Escape") cerrarVisor();
+  if (e.key === "ArrowLeft") document.getElementById("visorAnterior").click();
+  if (e.key === "ArrowRight") document.getElementById("visorSiguiente").click();
+});
+
+/* ---------- Panel técnico: guardar diagnóstico/solución/responsable (solo técnico) ---------- */
+function guardarInformacionTecnica(id) {
+  if (!hasPermission("gestionTecnica")) { denegarAccion(); return; }
+  const r = reportes.find(x => x.id === id);
+  if (!r) return;
+  r.responsable = document.getElementById("campoResponsable").value.trim();
+  r.diagnostico = document.getElementById("campoDiagnostico").value.trim();
+  r.solucion = document.getElementById("campoSolucion").value.trim();
+  guardarReportes(reportes);
+  renderizarSeguimiento(id);
+  renderizarLista("listaReportes", obtenerFiltrados("filtroEstadoReportes", "filtroCategoriaReportes"));
+}
+
+function marcarComoSolucionado(id) {
+  if (!hasPermission("gestionTecnica") || !hasPermission("cambiarEstado")) { denegarAccion(); return; }
+  guardarInformacionTecnica(id);
+  cambiarEstado(id, "Resuelto");
+  renderizarSeguimiento(id);
+}
+
+/* ---------- Notas de seguimiento (solo el técnico puede crear) ---------- */
+function agregarNota(reporteId) {
+  if (!hasPermission("agregarNotas")) { denegarAccion(); return; }
+  const texto = document.getElementById("campoTextoNota").value.trim();
+  if (!texto) return;
+  const ahora = new Date();
+  const nota = {
+    id: "n" + Date.now(),
+    reporteId,
+    texto,
+    autor: currentUser.name,
+    rol: currentUser.role,
+    fecha: fechaHoy(),
+    hora: horaAhora()
+  };
+  notas.push(nota);
+  guardarNotas(notas);
+  renderizarSeguimiento(reporteId);
+}
+
+/* =====================================================================
+   ACCESO LOCAL: nombre + PIN. Cada nombre tiene sus propios reportes y notas en este dispositivo.
+   El PIN se guarda como huella (hash) con sal. Sirve para separar usuarios, no para cifrar los datos.
+===================================================================== */
+const CLAVE_PERFILES = "tecnoayuda_perfiles", CLAVE_ULTIMO = "tecnoayuda_ultimo_nombre";
+const formAcceso = document.getElementById("formAcceso");
+const campoNombre = document.getElementById("accesoNombre"), campoPin = document.getElementById("accesoPin"), campoPin2 = document.getElementById("accesoPin2");
+const accesoError = document.getElementById("accesoError");
+let intentosFallidos = 0, bloqueadoHasta = 0;
+
+function limpiarNombre(t) { return t.replace(/[<>&"'`]/g, "").trim().replace(/\s+/g, " "); }
+function idDeNombre(t) { return encodeURIComponent(limpiarNombre(t).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")); }
+function leerPerfiles() { try { return JSON.parse(ALMACEN.get(CLAVE_PERFILES)) || {}; } catch (e) { return {}; } }
+// SHA-256 en JavaScript puro: se usa cuando crypto.subtle no existe (páginas http sin HTTPS), con el mismo resultado,
+// así un PIN creado en un contexto sigue funcionando en el otro.
+function sha256js(texto) {
+  const K = [0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+  const bytes = Array.from(new TextEncoder().encode(texto));
+  const bits = bytes.length * 8;
+  bytes.push(0x80);
+  while (bytes.length % 64 !== 56) bytes.push(0);
+  for (let i = 7; i >= 0; i--) bytes.push(i >= 4 ? 0 : (bits >>> (i * 8)) & 0xff);
+  const H = [0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+  const rotd = (x, n) => (x >>> n) | (x << (32 - n));
+  for (let off = 0; off < bytes.length; off += 64) {
+    const w = new Array(64);
+    for (let i = 0; i < 16; i++) w[i] = (bytes[off+i*4] << 24) | (bytes[off+i*4+1] << 16) | (bytes[off+i*4+2] << 8) | bytes[off+i*4+3];
+    for (let i = 16; i < 64; i++) {
+      const s0 = rotd(w[i-15], 7) ^ rotd(w[i-15], 18) ^ (w[i-15] >>> 3);
+      const s1 = rotd(w[i-2], 17) ^ rotd(w[i-2], 19) ^ (w[i-2] >>> 10);
+      w[i] = (w[i-16] + s0 + w[i-7] + s1) | 0;
+    }
+    let [a, b, c, d, e, f, g, h] = H;
+    for (let i = 0; i < 64; i++) {
+      const t1 = (h + (rotd(e, 6) ^ rotd(e, 11) ^ rotd(e, 25)) + ((e & f) ^ (~e & g)) + K[i] + w[i]) | 0;
+      const t2 = ((rotd(a, 2) ^ rotd(a, 13) ^ rotd(a, 22)) + ((a & b) ^ (a & c) ^ (b & c))) | 0;
+      h = g; g = f; f = e; e = (d + t1) | 0; d = c; c = b; b = a; a = (t1 + t2) | 0;
+    }
+    H[0] = (H[0]+a)|0; H[1] = (H[1]+b)|0; H[2] = (H[2]+c)|0; H[3] = (H[3]+d)|0;
+    H[4] = (H[4]+e)|0; H[5] = (H[5]+f)|0; H[6] = (H[6]+g)|0; H[7] = (H[7]+h)|0;
+  }
+  return H.map(x => (x >>> 0).toString(16).padStart(8, "0")).join("");
+}
+function djb2(texto) { let h = 5381; for (let k = 0; k < texto.length; k++) h = ((h << 5) + h + texto.charCodeAt(k)) | 0; return "h" + h; }   // solo para perfiles antiguos
+async function huellaPin(pin, sal, huellaGuardada) {
+  const texto = sal + ":" + pin + ":tecnoayuda";
+  if (huellaGuardada && huellaGuardada.charAt(0) === "h") return djb2(texto);   // perfil creado con la versión anterior
+  if (window.crypto && crypto.subtle) {
+    try {
+      const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(texto));
+      return Array.from(new Uint8Array(buf), b => b.toString(16).padStart(2, "0")).join("");
+    } catch (e) { /* se usa la versión en JavaScript */ }
+  }
+  return sha256js(texto);
+}
+function salAleatoria() {
+  const a = new Uint8Array(8);
+  if (window.crypto && crypto.getRandomValues) crypto.getRandomValues(a); else for (let i = 0; i < a.length; i++) a[i] = Math.floor(Math.random() * 256);
+  return Array.from(a, b => b.toString(16).padStart(2, "0")).join("");
+}
+
+/* Dos pestañas explícitas: "Entrar" (usuario existente) y "Crear usuario" (nuevo, pide repetir el PIN). */
+const tabEntrar = document.getElementById("tabEntrar"), tabCrear = document.getElementById("tabCrear");
+const btnAcceso = document.getElementById("btnAcceso"), accesoAviso = document.getElementById("accesoAviso");
+let modoAcceso = "entrar", procesandoAcceso = false;
+
+function fijarModoAcceso(modo, conservarMensajes) {
+  modoAcceso = modo;
+  const crear = modo === "crear";
+  tabEntrar.setAttribute("aria-selected", String(!crear));
+  tabCrear.setAttribute("aria-selected", String(crear));
+  campoPin2.parentElement.classList.toggle("oculto", !crear);
+  btnAcceso.textContent = crear ? "Crear usuario y entrar" : "Entrar";
+  campoPin.autocomplete = crear ? "new-password" : "current-password";
+  accesoAviso.textContent = crear ? "Elige tu nombre y un PIN de 4 a 6 números. Anótalo: no se puede recuperar." : "";
+  if (!conservarMensajes) accesoError.textContent = "";
+  campoPin.value = ""; campoPin2.value = "";
+}
+tabEntrar.addEventListener("click", () => { fijarModoAcceso("entrar"); campoPin.focus(); });
+tabCrear.addEventListener("click", () => { fijarModoAcceso("crear"); (campoNombre.value ? campoPin : campoNombre).focus(); });
+
+function prepararAcceso() {
+  let ultimo = ""; try { ultimo = ALMACEN.get(CLAVE_ULTIMO) || ""; } catch (e) {}
+  const hayUsuarios = Object.keys(leerPerfiles()).length > 0;
+  fijarModoAcceso(hayUsuarios ? "entrar" : "crear");
+  campoNombre.value = hayUsuarios ? ultimo : "";
+  document.getElementById("accesoSinAlmacen").classList.toggle("oculto", ALMACEN.persistente);
+  (campoNombre.value ? campoPin : campoNombre).focus();
+}
+
+/* No se usa el evento "submit": en contenedores aislados (vista previa de Claude, iframes con sandbox sin allow-forms)
+   el navegador bloquea el envío de formularios y el botón no hacía nada. Se usan clics y la tecla Enter. */
+formAcceso.addEventListener("submit", (e) => e.preventDefault());
+btnAcceso.addEventListener("click", enviarAcceso);
+[campoNombre, campoPin, campoPin2].forEach(c => c.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") { e.preventDefault(); enviarAcceso(); }
+}));
+
+async function enviarAcceso() {
+  if (procesandoAcceso) return;
+  accesoError.textContent = "";
+  const nombre = limpiarNombre(campoNombre.value), pin = campoPin.value.trim();
+  if (!nombre) { accesoError.textContent = "Escribe tu nombre."; campoNombre.focus(); return; }
+  if (!/^\d{4,6}$/.test(pin)) { accesoError.textContent = "El PIN debe tener de 4 a 6 números."; campoPin.focus(); return; }
+  const espera = Math.ceil((bloqueadoHasta - Date.now()) / 1000);
+  if (modoAcceso === "entrar" && espera > 0) { accesoError.textContent = `Demasiados intentos. Espera ${espera} s.`; return; }
+
+  procesandoAcceso = true; btnAcceso.disabled = true;
+  try {
+    const perfiles = leerPerfiles(), id = idDeNombre(nombre);
+    if (!id) { accesoError.textContent = "Escribe un nombre válido."; return; }
+    let perfil = perfiles[id];
+
+    if (modoAcceso === "crear") {
+      if (perfil) { accesoError.textContent = "Ese usuario ya existe. Toca «Entrar» e ingresa con tu PIN."; return; }
+      if (pin !== campoPin2.value.trim()) { accesoError.textContent = "Los dos PIN no coinciden."; campoPin2.focus(); return; }
+      const sal = salAleatoria();
+      perfil = perfiles[id] = { nombre, sal, huella: await huellaPin(pin, sal) };
+      try { ALMACEN.set(CLAVE_PERFILES, JSON.stringify(perfiles)); }
+      catch (err) { accesoError.textContent = "No se pudo crear el usuario: el almacenamiento está lleno."; return; }
+    } else {
+      if (!perfil) { accesoError.textContent = "No existe un usuario con ese nombre. Toca «Crear usuario» para registrarlo."; return; }
+      if (await huellaPin(pin, perfil.sal, perfil.huella) !== perfil.huella) {
+        if (++intentosFallidos >= 5) { bloqueadoHasta = Date.now() + 30000; intentosFallidos = 0; }
+        accesoError.textContent = "PIN incorrecto.";
+        campoPin.value = ""; campoPin.focus();
+        return;
+      }
+    }
+    intentosFallidos = 0;
+    entrarApp({ id, name: perfil.nombre, role: "tecnico" });
+  } catch (err) {
+    accesoError.textContent = "No se pudo completar el acceso: " + ((err && err.message) || err);
+  } finally {
+    procesandoAcceso = false; btnAcceso.disabled = false;
+  }
+}
+
+function entrarApp(usuario) {
+  currentUser = usuario;
+  try { ALMACEN.set(CLAVE_ULTIMO, usuario.name); } catch (e) {}
+  reportes = leerLista("reportes"); notas = leerLista("notas");
+  formAcceso.reset();
+  document.getElementById("pantallaAcceso").classList.add("oculto");
+  document.getElementById("app").classList.remove("oculto");
+  document.getElementById("saludoNombre").textContent = usuario.name;
+  if (!ALMACEN.persistente) document.querySelector("#vista-inicio .hero p").textContent = "⚠️ Modo temporal: este navegador no permite guardar datos y se perderán al cerrar. Ábrela desde su dirección web (https) o instálala desde el navegador.";
+  actualizarContadores();
+  renderizarLista("listaReportes", reportes);
+  renderizarLista("listaHistorial", reportes);
+  inicializarSeguimiento();
+  mostrarVista("inicio");
+}
+
+// Salir: se vacía todo lo del usuario en pantalla y en memoria antes de mostrar el acceso.
+document.getElementById("btnSalir").addEventListener("click", () => {
+  currentUser = null; reportes = []; notas = []; vistaActual = null;
+  limpiarAdjuntos(); cerrarVisor();
+  document.getElementById("formReporte").reset();
+  ["listaReportes", "listaHistorial"].forEach(id => { document.getElementById(id).innerHTML = ""; });
+  document.getElementById("app").classList.add("oculto");
+  document.getElementById("pantallaAcceso").classList.remove("oculto");
+  prepararAcceso();
+});
+
+prepararAcceso();
+
+// Funcionamiento sin conexión: el service worker guarda la app en el dispositivo (solo si se abre por http/https).
+const ENAPK = !!(window.Capacitor && typeof window.Capacitor.isNativePlatform === "function" && window.Capacitor.isNativePlatform());
+if (!ENAPK && "serviceWorker" in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register("sw.js").catch(() => {});
+</script>
+
+</body>
+</html>
